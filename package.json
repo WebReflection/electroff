@@ -1,0 +1,36 @@
+{
+  "name": "electroff",
+  "version": "0.0.0",
+  "description": "A cross browser, electron-less helper, for IoT projects and standalone applications",
+  "main": "./cjs/index.js",
+  "scripts": {
+    "build": "npm run cjs && npm run test",
+    "cjs": "ascjs --no-default esm cjs",
+    "test": "node test/index.js"
+  },
+  "keywords": [],
+  "author": "Andrea Giammarchi",
+  "license": "ISC",
+  "devDependencies": {
+    "ascjs": "^4.0.1",
+    "express": "^4.17.1"
+  },
+  "module": "./esm/index.js",
+  "type": "module",
+  "exports": {
+    "import": "./esm/index.js",
+    "default": "./cjs/index.js"
+  },
+  "dependencies": {
+    "flatted": "^3.0.4",
+    "umeta": "^0.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebReflection/electroff.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WebReflection/electroff/issues"
+  },
+  "homepage": "https://github.com/WebReflection/electroff#readme"
+}
