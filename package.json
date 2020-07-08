@@ -1,6 +1,6 @@
 {
   "name": "electroff",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A cross browser, electron-less helper, for IoT projects and standalone applications",
   "main": "./cjs/index.js",
   "scripts": {
