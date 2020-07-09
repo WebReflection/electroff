@@ -9,13 +9,11 @@
 
   /*
   electroff(async ({__dirname, global, require}) => {
-    const {join} = require('path');
-    const {readFile} = require('fs').promises;
-    const content = await readFile(join(__dirname, '..', 'test', 'index.html'));
-    console.log(content);
+    
   });
   //*/
 
+  //*
   electroff(async ({__dirname, global, require}) => {
     global.test = Math.random();
     console.log(__dirname);

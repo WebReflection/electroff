@@ -93,11 +93,18 @@ console.log(content);
 
 In few words, the following code:
 ```js
-const chunk = require('fs').promises.readFile('test.txt').slice(0, 1);
-await chunk;
+await require('fs').promises.readFile('file.txt');
 ```
 
-Would carry all information needed to execute all those operations at once, but only once any of its intermediate, or final result, is *awaited*.
+would evaluated, within the _vm_ sandbox, the following code:
+```js
+await require("fs").promises.readFile.apply(
+  require("fs").promises,
+  ["test.txt"]
+)
+```
+
+All operations are inevitably repeated because every single `.property` access, `.method(...)` invoke, or even `new module.Thing(...)`, is a branch of the code a part.
 
   </div>
 </details>
