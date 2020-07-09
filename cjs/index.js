@@ -25,6 +25,7 @@ const vm = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanb
 const {stringify} = require('flatted');
 
 const umeta = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('umeta'));
+const { response } = require('express');
 const {dirName, require: $require} = umeta(({url: require('url').pathToFileURL(__filename).href}));
 
 const {isArray} = Array;
@@ -80,6 +81,13 @@ const sandbox = vm.createContext({
   require: $require
 });
 
+const ok = (response, content) => {
+  response.writeHead(200, {
+    'Content-Type': 'text/plain;charset=utf-8'
+  });
+  response.end(stringify(content));
+};
+
 module.exports = (request, response, next) => {
   const {method, url} = request;
   if (/^electroff(\?module)?$/.test(basename(url))) {
@@ -103,15 +111,11 @@ module.exports = (request, response, next) => {
             if (exit) {
               cache.delete(UID);
               delete sandbox.global[UID];
-              response.writeHead(200);
-              response.end('');
+              ok(response, '');
               if (DEBUG)
                 console.log(`removed 1 client - total ${cache.size}`);
               return;
             }
-            response.writeHead(200, {
-              'Content-Type': 'text/plain;charset=utf-8'
-            });
 
             // YOLO
             vm.runInContext(
@@ -123,7 +127,7 @@ module.exports = (request, response, next) => {
             const {result, error} = sandbox.global[X00];
             sandbox.global[X00] = null;
             if (error) {
-              response.end(stringify({error}));
+              ok(response, {error});
               if (DEBUG)
                 console.error(`unable to evaluate: ${code}`);
             }
@@ -133,10 +137,10 @@ module.exports = (request, response, next) => {
                   result => {
                     if (result instanceof Buffer)
                       result = result.toString('utf-8');
-                    response.end(stringify({result}));
+                    ok(response, {result});
                   },
                   e => {
-                    response.end(stringify({error: e.message}))
+                    ok(response, {error: e.message});
                     if (DEBUG)
                       console.error(`unable to resolve: ${code}`);
                   }
@@ -153,17 +157,17 @@ module.exports = (request, response, next) => {
                       const instances = sandbox.global[UID][X00];
                       for (const key in instances) {
                         if (instances[key] === result) {
-                          response.end(stringify({
+                          ok(response, {
                             result: {
                               [CHANNEL]: `global['${UID}']['${X00}']['${key}']`
                             }
-                          }));
+                          });
                           return;
                         }
                       }
                   }
                 }
-                response.end(stringify({result}));
+                ok(response, {result});
               }
             }
           }
