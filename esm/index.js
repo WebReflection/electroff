@@ -119,7 +119,7 @@ export default (request, response, next) => {
             // YOLO
             vm.runInContext(
               `try{global['${X00}']={result:(${code})}}
-              catch(o_O){global['${X00}']={error:e.message}}`,
+              catch({message}){global['${X00}']={error:message}}`,
               sandbox
             );
 
