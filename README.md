@@ -39,22 +39,21 @@ The `public/index.html` folder can contain something like this:
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Electroff Basic Test</title>
-  <script src="electroff">/* it must be the first script */</script>
-  <script>
-  // whenever it's convenient
-  addEventListener('DOMContentLoaded', () => {
-    // pass an asynchronous callback to electroff
-    // it will be invoked instantly with few helpers
-    electroff(async ({require, __dirname}) => {
-      const {arch, cpus, freemem} = require('os');
-      const CPUs = await cpus();
-      document.body.innerHTML = `
-        <h1>${document.title}</h1>
-        <h2> CPUs: ${CPUs.length} </h2>
-        <h2> Architecture: ${await arch()} </h2>
-        <h2> Free memory: ${await freemem()} </h2>
-      `;
-    });
+  <script type="module">
+  // <script src="electroff"> for a global utility
+  // import name from '/electroff?module' as ESM module
+  import CommonJS from '/electroff?module';
+
+  // pass an asynchronous callback to electroff
+  // it will be invoked instantly with few helpers
+  CommonJS(async ({require}) => {
+    const {arch, cpus, freemem} = require('os');
+    document.body.innerHTML = `
+      <h1>${document.title}</h1>
+      <h2> CPUs: ${await cpus().length} </h2>
+      <h2> Architecture: ${await arch()} </h2>
+      <h2> Free memory: ${await freemem()} </h2>
+    `;
   });
   </script>
 </head>

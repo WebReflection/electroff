@@ -35,6 +35,7 @@ const rand = length => crypto.randomBytes(length).toString('hex');
 
 const CHANNEL = rand(32);
 const EXPIRE = 300000; // expires in 5 minutes
+const X00 = '\x00';
 
 const cleanup = () => {
   const now = Date.now();
@@ -70,7 +71,8 @@ const sandbox = vm.createContext({
 
 export default (request, response, next) => {
   const {method, url} = request;
-  if (basename(url) === 'electroff') {
+  if (/^electroff(\?module)?$/.test(basename(url))) {
+    const {$1: asModule} = RegExp;
     if (method === 'POST') {
       const data = [];
       request.on('data', chunk => {
@@ -83,7 +85,7 @@ export default (request, response, next) => {
             cache.set(UID, Date.now() + EXPIRE);
             cleanup();
             if (!(UID in sandbox.global)) {
-              sandbox.global[UID] = {'\x00': create(null)};
+              sandbox.global[UID] = {[X00]: create(null)};
             }
             if (exit) {
               cache.delete(UID);
@@ -95,18 +97,16 @@ export default (request, response, next) => {
             response.writeHead(200, {
               'Content-Type': 'text/plain;charset=utf-8'
             });
-            // #YOLO
+
+            // YOLO
             vm.runInContext(
-              `try {
-                global['\x00'] = {result: (${code})};
-              }
-              catch (e) {
-                global['\x00'] = {error: e.message}
-              }`,
+              `try{global['${X00}']={result:(${code})}}
+              catch(o_O){global['${X00}']={error:e.message}}`,
               sandbox
             );
-            const {result, error} = sandbox.global['\x00'];
-            sandbox.global['\x00'] = null;
+
+            const {result, error} = sandbox.global[X00];
+            sandbox.global[X00] = null;
             if (error)
               response.end(stringify({error}));
             else {
@@ -128,10 +128,14 @@ export default (request, response, next) => {
                     case result instanceof Date:
                       break;
                     default:
-                      const instances = sandbox.global[UID]['\x00'];
+                      const instances = sandbox.global[UID][X00];
                       for (const key in instances) {
                         if (instances[key] === result) {
-                          response.end(stringify({result: {[CHANNEL]: `global['${UID}']['\x00'][${key}]`}}));
+                          response.end(stringify({
+                            result: {
+                              [CHANNEL]: `global['${UID}']['${X00}']['${key}']`
+                            }
+                          }));
                           return;
                         }
                       }
@@ -153,15 +157,18 @@ export default (request, response, next) => {
     }
     else {
       response.writeHead(200, {
+        'Cache-Control': 'no-store',
         'Content-Type': 'application/javascript;charset=utf-8'
       });
-      response.end(js.replace('{{UID}}', rand(16)));
+      response.end(
+        js.replace('{{UID}}', rand(16)).concat(
+          asModule ? 'export default electroff;' : ''
+        )
+      );
     }
     return true;
   }
-  try {
-    return false;
-  }
+  try { return false; }
   finally {
     if (next)
       next();

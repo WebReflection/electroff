@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>electroff</title>
+  <script src="electroff"></script>
+  <script>
+
+  /*
+  electroff(async ({__dirname, global, require}) => {
+    const {join} = require('path');
+    const {readFile} = require('fs').promises;
+    const content = await readFile(join(__dirname, '..', 'test', 'index.html'));
+    console.log(content);
+  });
+  //*/
+
+  electroff(async ({__dirname, global, require}) => {
+    global.test = Math.random();
+    console.log(__dirname);
+    console.log('global.test', await global.test);
+
+    const {debug} = require('process').features;
+    console.log('debug is', await debug);
+  });
+
+  electroff(async ({require, remove, global}) => {
+
+    console.log('global.test', await global.test);
+
+    const {readFile} = require('fs').promises;
+    const {version} = JSON.parse(await readFile('package.json'));
+
+    console.log(`electroff v${version}`);
+
+    const {EventEmitter} = require('events');
+    const test = await new EventEmitter;
+
+    let max = await test.getMaxListeners();
+    console.log(`max listeners: ${max}`);
+
+    await test.setMaxListeners(20);
+
+    max = await test.getMaxListeners();
+    console.log(`max listeners: ${max}`);
+
+    await remove(test);
+    // this would throw:
+    // await test.getMaxListeners();
+  });
+  //*/
+  </script>
+</head>
+</html>

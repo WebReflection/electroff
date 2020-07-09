@@ -1,12 +1,13 @@
-"{{Flatted}}";
-
 const electroff = (function (fetch) {'use strict';
+
+  const self = {};
+  "{{Flatted}}";
 
   const UID = '{{UID}}';
   const channel = '{{channel}}';
 
   const secret = Symbol('electroff');
-  const {parse} = Flatted;
+  const {parse} = self.Flatted;
   const {stringify} = JSON;
 
   const apply = (target, self, args) => {
@@ -16,9 +17,9 @@ const electroff = (function (fetch) {'use strict';
 
   const createArgs = args => `[${
     args.map(
-      arg => typeof arg === 'function' && !arg[secret] ?
-        arg.toString() :
-        (arg != null && value(arg) || 'null')
+      arg => typeof arg === 'function' ?
+        (arg[secret] || arg.toString()) :
+        (stringify(arg) || 'undefined')
     ).join(',')
   }]`;
 
