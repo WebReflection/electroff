@@ -27,7 +27,7 @@ const electroff = (function (fetch) {'use strict';
     headers: {'Content-Type': 'application/json;charset=utf-8'},
     method: 'POST',
     body: stringify(body)
-  }).then(b => b.text()).then(parse, () => {
+  }).then(b => b.text()).then(parse, (e = {message: 'Network Error'}) => {
     document.documentElement.innerHTML = `
       <!doctype html>
       <html lang="en">
@@ -44,6 +44,7 @@ const electroff = (function (fetch) {'use strict';
         </body>
       </html>
     `.trim();
+    return {error: e.message};
   });
 
   const value = any => any[secret] || stringify(any);
