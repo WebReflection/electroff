@@ -195,11 +195,9 @@ However, it has its own caveats:
 This module is currently in its early development stage, and there are at least two main concerns regarding it:
 
   * the `remove(...)` utility requires user-land care, 'cause if it's not performed, the _vm_ behind the scene could retain in RAM references "_forever_", or at least up to the time the associated _UID_ to each client gets purged (once every 5 minutes)
-  * the purge mechanism is based on requests: no requests whatsoever in 5 minutes, nothing gets purged. On the other hand, a device that switches off and suddenly resumes the page, would find all its previously created _Node.js_ instances undefined, so this could break too
+  * the purge mechanism is based on requests: no requests whatsoever in 5 minutes, nothing gets purged
 
-However, the latter situation is likely an edge case, and I might implement a hard client-side refresh, when such situation happens ... but the _TL;DR_ version of this _F.A.Q._ is that this is not an issue, until it is.
-
-That means we can use this project in production, as long as its constrains are clear, and a user throwing errors at some point, after 5 minutes not interacting with the app, are an issue at all.
+This means we can use this project in _IoT_ or standalone projects, as long as its constrains are clear, and user being redirected to a fake 404 page that requires them to reload is acceptable.
 
   </div>
 </details>
