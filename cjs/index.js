@@ -19,12 +19,12 @@
 const crypto = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('crypto'));
 const {readFileSync} = require('fs');
 const {basename, dirname, join} = require('path');
+const {env} = require('process');
 const vm = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('vm'));
 
 const {stringify} = require('flatted');
 
 const umeta = (m => m.__esModule ? /* istanbul ignore next */ m.default : /* istanbul ignore next */ m)(require('umeta'));
-const { freemem } = require('os');
 const {dirName, require: $require} = umeta(({url: require('url').pathToFileURL(__filename).href}));
 
 const {isArray} = Array;
@@ -37,6 +37,7 @@ const rand = length => crypto.randomBytes(length).toString('hex');
 const CHANNEL = rand(32);
 const EXPIRE = 300000; // expires in 5 minutes
 const X00 = '\x00';
+const DEBUG = /^(?:1|true)$/i.test(env.DEBUG);
 
 const cleanup = () => {
   const now = Date.now();
@@ -45,10 +46,19 @@ const cleanup = () => {
     if (value < now)
       drop.push(key);
   });
-  drop.forEach(UID => {
-    cache.delete(UID);
-    delete sandbox.global[UID];
-  });
+  const {length} = drop;
+  if (0 < length) {
+    if (DEBUG)
+      console.log(
+        `purged ${length} client${
+          length === 1 ? '' : 's'
+        } - total ${cache.size}`
+      );
+    drop.forEach(UID => {
+      cache.delete(UID);
+      delete sandbox.global[UID];
+    });
+  }
 };
 
 const js = ''.replace.call(
@@ -87,12 +97,16 @@ module.exports = (request, response, next) => {
             cleanup();
             if (!(UID in sandbox.global)) {
               sandbox.global[UID] = {[X00]: create(null)};
+              if (DEBUG)
+                console.log(`created 1 client - total ${cache.size}`);
             }
             if (exit) {
               cache.delete(UID);
               delete sandbox.global[UID];
               response.writeHead(200);
               response.end('');
+              if (DEBUG)
+                console.log(`removed 1 client - total ${cache.size}`);
               return;
             }
             response.writeHead(200, {
@@ -108,17 +122,24 @@ module.exports = (request, response, next) => {
 
             const {result, error} = sandbox.global[X00];
             sandbox.global[X00] = null;
-            if (error)
+            if (error) {
               response.end(stringify({error}));
+              if (DEBUG)
+                console.error(`unable to evaluate: ${code}`);
+            }
             else {
               try {
                 result.then(
                   result => {
                     if (result instanceof Buffer)
-                      result = result.toString();
+                      result = result.toString('utf-8');
                     response.end(stringify({result}));
                   },
-                  e => response.end(stringify({error: e.message}))
+                  e => {
+                    response.end(stringify({error: e.message}))
+                    if (DEBUG)
+                      console.error(`unable to resolve: ${code}`);
+                  }
                 );
               }
               catch (e) {
@@ -149,10 +170,16 @@ module.exports = (request, response, next) => {
           else {
             response.writeHead(403);
             response.end();
+            if (DEBUG)
+              console.error(
+                channel ? `unauthorized client` : `unauthorized request`
+              );
           }
         } catch (e) {
           response.writeHead(500);
           response.end();
+          if (DEBUG)
+              console.error(`internal server error`, e);
         }
       });
     }

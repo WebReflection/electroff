@@ -18,12 +18,12 @@
 import crypto from 'crypto';
 import {readFileSync} from 'fs';
 import {basename, dirname, join} from 'path';
+import {env} from 'process';
 import vm from 'vm';
 
 import {stringify} from 'flatted';
 
 import umeta from 'umeta';
-import { freemem } from 'os';
 const {dirName, require: $require} = umeta(import.meta);
 
 const {isArray} = Array;
@@ -36,6 +36,7 @@ const rand = length => crypto.randomBytes(length).toString('hex');
 const CHANNEL = rand(32);
 const EXPIRE = 300000; // expires in 5 minutes
 const X00 = '\x00';
+const DEBUG = /^(?:1|true)$/i.test(env.DEBUG);
 
 const cleanup = () => {
   const now = Date.now();
@@ -44,10 +45,19 @@ const cleanup = () => {
     if (value < now)
       drop.push(key);
   });
-  drop.forEach(UID => {
-    cache.delete(UID);
-    delete sandbox.global[UID];
-  });
+  const {length} = drop;
+  if (0 < length) {
+    if (DEBUG)
+      console.log(
+        `purged ${length} client${
+          length === 1 ? '' : 's'
+        } - total ${cache.size}`
+      );
+    drop.forEach(UID => {
+      cache.delete(UID);
+      delete sandbox.global[UID];
+    });
+  }
 };
 
 const js = ''.replace.call(
@@ -86,12 +96,16 @@ export default (request, response, next) => {
             cleanup();
             if (!(UID in sandbox.global)) {
               sandbox.global[UID] = {[X00]: create(null)};
+              if (DEBUG)
+                console.log(`created 1 client - total ${cache.size}`);
             }
             if (exit) {
               cache.delete(UID);
               delete sandbox.global[UID];
               response.writeHead(200);
               response.end('');
+              if (DEBUG)
+                console.log(`removed 1 client - total ${cache.size}`);
               return;
             }
             response.writeHead(200, {
@@ -107,17 +121,24 @@ export default (request, response, next) => {
 
             const {result, error} = sandbox.global[X00];
             sandbox.global[X00] = null;
-            if (error)
+            if (error) {
               response.end(stringify({error}));
+              if (DEBUG)
+                console.error(`unable to evaluate: ${code}`);
+            }
             else {
               try {
                 result.then(
                   result => {
                     if (result instanceof Buffer)
-                      result = result.toString();
+                      result = result.toString('utf-8');
                     response.end(stringify({result}));
                   },
-                  e => response.end(stringify({error: e.message}))
+                  e => {
+                    response.end(stringify({error: e.message}))
+                    if (DEBUG)
+                      console.error(`unable to resolve: ${code}`);
+                  }
                 );
               }
               catch (e) {
@@ -148,10 +169,16 @@ export default (request, response, next) => {
           else {
             response.writeHead(403);
             response.end();
+            if (DEBUG)
+              console.error(
+                channel ? `unauthorized client` : `unauthorized request`
+              );
           }
         } catch (e) {
           response.writeHead(500);
           response.end();
+          if (DEBUG)
+              console.error(`internal server error`, e);
         }
       });
     }

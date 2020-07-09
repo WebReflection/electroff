@@ -203,3 +203,25 @@ That means we can use this project in production, as long as its constrains are 
 
   </div>
 </details>
+
+<details>
+  <summary><strong>Which browser is compatible?</strong></summary>
+  <div>
+
+All evergreen browsers should work just fine, but these are the requirements for this module to work on the client:
+
+  * `async/await` [native capability](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function#Browser_compatibility) 
+  * `fetch` [native API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#Browser_compatibility)
+  * `navigator.sendBeacon` [native method](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon#Browser_compatibility)
+
+  </div>
+</details>
+
+<details>
+  <summary><strong>How to debug?</strong></summary>
+  <div>
+
+If there is a `DEBUG=1` or a `DEBUG=true` environment variable, a lot of helpful details are logged in the terminal, either via `console.log`, or via `console.error`, when something has been caught as an error.
+
+  </div>
+</details>
