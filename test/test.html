@@ -46,6 +46,11 @@
     await remove(test);
     // this would throw:
     // await test.getMaxListeners();
+
+    // the following should work as expected ... guess what
+    // const {Shenanigans} = require('os');
+    // try { await new Shenanigans; }
+    // catch (o_O) { console.log('expected', o_O); }
   });
   //*/
   </script>
