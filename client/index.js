@@ -10,23 +10,14 @@ const electroff = (function (fetch) {'use strict';
   const {parse} = self.Flatted;
   const {stringify} = JSON;
 
-  const apply = (target, self, args) => {
-    const context = self != null && value(self) || 'null';
-    return `${target()}.apply(${context},${createArgs(args)})`;
-  };
-
-  const createArgs = args => `[${
-    args.map(
-      arg => typeof arg === 'function' ?
-        (arg[secret] || arg.toString()) :
-        (stringify(arg) || 'undefined')
-    ).join(',')
-  }]`;
+  const apply = (target, self, args) =>
+    `${target()}.apply(${value(self)},${json(args)})`
+  ;
 
   const exec = body => fetch('electroff', {
     headers: {'Content-Type': 'application/json;charset=utf-8'},
     method: 'POST',
-    body: stringify(body)
+    body: json(body)
   }).then(b => b.text()).then(parse, (e = {message: 'Network Error'}) => {
     document.documentElement.innerHTML = `
       <!doctype html>
@@ -47,7 +38,11 @@ const electroff = (function (fetch) {'use strict';
     return {error: e.message};
   });
 
-  const value = any => any[secret] || stringify(any);
+  const json = any => stringify(any, (_, any) => value(any));
+
+  const value = any => typeof any === 'function' ?
+    (any[secret] || any.toString()) : any
+  ;
 
   (function poll() {
     setTimeout(
@@ -67,19 +62,19 @@ const electroff = (function (fetch) {'use strict';
     let instances = 0;
     let run = Promise.resolve();
 
-    const evaluate = code => (run = run.then(() => new Promise((res, rej) => {
+    const evaluate = code => (run = run.then(() =>
       exec({UID, channel, code}).then(response => {
         const {result, error} = response;
         if (error)
-          rej(new Error(error));
+          return Promise.reject(new Error(error));
         else if (result && result[channel]) {
           const global = result[channel];
-          res(new Proxy(() => global, ghandler));
+          return new Proxy(() => global, $handler);
         }
         else
-          res(result);
-      });
-    })));
+          return result;
+      })
+    ));
 
     const handler = {
       apply(target, self, args) {
@@ -92,7 +87,7 @@ const electroff = (function (fetch) {'use strict';
       },
       construct(target, args) {
         const ref = `global['${UID}']['\x00'][${instances++}]`;
-        const text = `(${ref}||(${ref}=new(${target()})(...${createArgs(args)})))`;
+        const text = `(${ref}||(${ref}=new(${target()})(...${json(args)})))`;
         return new Proxy(() => text, handler);
       },
       get(target, key) {
@@ -115,7 +110,7 @@ const electroff = (function (fetch) {'use strict';
         }
         return new Proxy(
           function () {
-            return `${target()}[${value(key)}]`;
+            return `${target()}[${stringify(key)}]`;
           },
           handler
         );
@@ -124,12 +119,12 @@ const electroff = (function (fetch) {'use strict';
         throw new Error(`invalid "${key}" in ${target()} operation`);
       },
       set(target, k, v) {
-        evaluate(`${target()}[${value(k)}]=${value(v)}`);
+        evaluate(`${target()}[${stringify(k)}]=${json(v)}`);
         return true;
       }
     };
 
-    const ghandler = {
+    const $handler = {
       ...handler,
       get(target, key) {
         return key === 'then' ? void 0 : handler.get(target, key);
