@@ -1,6 +1,6 @@
 {
   "name": "electroff",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A cross browser, electron-less helper, for IoT projects and standalone applications",
   "main": "./cjs/index.js",
   "scripts": {
@@ -8,7 +8,12 @@
     "cjs": "ascjs --no-default esm cjs",
     "test": "node test/index.js"
   },
-  "keywords": ["electron", "alternative", "cross", "browser"],
+  "keywords": [
+    "electron",
+    "alternative",
+    "cross",
+    "browser"
+  ],
   "author": "Andrea Giammarchi",
   "license": "ISC",
   "devDependencies": {
