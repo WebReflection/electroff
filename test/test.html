@@ -44,7 +44,7 @@
     console.log(`max listeners: ${max}`);
 
     await remove(test);
-    // this would throw:
+    // after that, the following would throw:
     // await test.getMaxListeners();
 
     // the following should work as expected ... guess what
