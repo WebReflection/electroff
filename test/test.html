@@ -8,8 +8,14 @@
   <script>
 
   /*
-  electroff(async ({__dirname, global, require}) => {
-    
+  electroff(async ({require}) => {
+    const {EventEmitter} = require('events');
+    const ee = await new EventEmitter;
+    await ee.on('stuff', async function (value) {
+      console.log('stuff', value);
+      console.log(this);
+    });
+    await ee.emit('stuff', 123);
   });
   //*/
 

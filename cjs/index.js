@@ -62,6 +62,8 @@ const cleanup = () => {
   }
 };
 
+const fn = (_, $1) => parse(`"${$1}"`);
+
 const js = ''.replace.call(
   readFileSync(join(dirName, '..', 'client', 'index.js')),
   '{{channel}}',
@@ -78,7 +80,8 @@ const js = ''.replace.call(
 
 const sandbox = vm.createContext({
   global: create(null),
-  require: $require
+  require: $require,
+  console
 });
 
 const ok = (response, content) => {
@@ -103,6 +106,7 @@ module.exports = (request, response, next) => {
           if (channel === CHANNEL && UID) {
             cache.set(UID, Date.now() + EXPIRE);
             cleanup();
+            const exec = (code || '').replace(/"\\u0000(.+?)\\u0000"/g, fn);
             if (!(UID in sandbox.global)) {
               sandbox.global[UID] = {[X00]: create(null)};
               if (DEBUG)
@@ -119,7 +123,7 @@ module.exports = (request, response, next) => {
 
             // YOLO
             vm.runInContext(
-              `try{global['${X00}']={result:(${code})}}
+              `try{global['${X00}']={result:(${exec})}}
               catch({message}){global['${X00}']={error:message}}`,
               sandbox
             );
@@ -129,7 +133,7 @@ module.exports = (request, response, next) => {
             if (error) {
               ok(response, {error});
               if (DEBUG)
-                console.error(`unable to evaluate: ${code}`);
+                console.error(`unable to evaluate: ${exec}`);
             }
             else {
               try {
@@ -142,7 +146,7 @@ module.exports = (request, response, next) => {
                   e => {
                     ok(response, {error: e.message});
                     if (DEBUG)
-                      console.error(`unable to resolve: ${code}`);
+                      console.error(`unable to resolve: ${exec}`);
                   }
                 );
               }

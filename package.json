@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run cjs && npm run test",
     "cjs": "ascjs --no-default esm cjs",
-    "test": "node test/index.js"
+    "test": "DEBUG=1 node test/index.js"
   },
   "keywords": [
     "electron",
