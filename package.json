@@ -8,7 +8,7 @@
     "cjs": "ascjs --no-default esm cjs",
     "test": "node test/index.js"
   },
-  "keywords": [],
+  "keywords": ["electron", "alternative", "cross", "browser"],
   "author": "Andrea Giammarchi",
   "license": "ISC",
   "devDependencies": {
