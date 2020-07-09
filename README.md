@@ -40,8 +40,7 @@ The `public/index.html` folder can contain something like this:
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Electroff Basic Test</title>
   <script type="module">
-  // <script src="electroff"> for a global utility
-  // import name from '/electroff?module' as ESM module
+  // use <script src="electroff"> instead for a global utility
   import CommonJS from '/electroff?module';
 
   // pass an asynchronous callback to electroff
