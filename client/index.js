@@ -67,12 +67,11 @@ const electroff = (function (fetch) {'use strict';
         const {result, error} = response;
         if (error)
           return Promise.reject(new Error(error));
-        else if (result && result[channel]) {
+        if (result && result[channel]) {
           const global = result[channel];
           return new Proxy(() => global, $handler);
         }
-        else
-          return result;
+        return result;
       })
     ));
 
