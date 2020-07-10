@@ -11,7 +11,7 @@ const electroff = (function (fetch) {'use strict';
   const {stringify} = JSON;
 
   const apply = (target, self, args) =>
-    `${target()}.apply(${value(self)},${json(args)})`
+    `${target()}.apply(${json(self)},${json(args)})`
   ;
 
   const exec = body => fetch('electroff', {
@@ -38,11 +38,11 @@ const electroff = (function (fetch) {'use strict';
     return {error: e.message};
   });
 
-  const json = any => stringify(any, (_, any) => value(any));
-
-  const value = any => typeof any === 'function' ?
-    (any[secret] || `(\xFF${any}\xFF)`) : any
-  ;
+  const json = any => stringify(any, (_, any) => {
+    if (typeof any === 'function')
+      return `(\xFF${any[secret] || any}\xFF)`;
+    return any;
+  });
 
   (function poll() {
     setTimeout(
@@ -92,6 +92,7 @@ const electroff = (function (fetch) {'use strict';
       get(target, key) {
         switch (key) {
           case secret:
+          case 'toJSON':
             return target();
           case 'apply':
             return (self, args) => this.apply(target, self, args);
