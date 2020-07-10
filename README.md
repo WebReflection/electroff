@@ -287,3 +287,8 @@ If there is a `DEBUG=1` or a `DEBUG=true` environment variable, a lot of helpful
 
   </div>
 </details>
+
+
+## Examples
+
+  * [Raspberri Pi + oled](./examples/oled/README.md), write on the RPi oled screen from any browser
