@@ -208,6 +208,7 @@ At this early stage, I can recommend only few best-practices I've noticed while 
   * when a server side reference *method* is invoked, you *must await* it, i.e. `await emitter.setMaxListeners(20)`. This grants next time you `await emitter.getMaxListeners()` you'll receive the answer you expect
   * template literals are passed as plain arrays. If your library optimizes on template literals uniqueness, it will always re-parse/re-do any dance, because the array on the server side will be always a different one. Create a file that queries the DB, and simply `require("./db-helper")` instead of writing all SQL queries on the client side, and use _Node.js_ regular helpers/files whenever it works
   * try to keep `global` references to a minimum amount, as the back and forward dance is quite expensive, and most of the time you won't need it
+  * if any needed instance has an emit once ready, `const instance = new Thing; await until(instance).is('ready')` instead of `const instance = await new Thing; await instance.once('ready', doThing)`, so you ensure your instance is ready within the client side scope, instead of needing a foreign callback that cannot reach such scope
 
   </div>
 </details>
