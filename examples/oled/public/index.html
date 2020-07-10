@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Oled Update</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <script type="module">
+  import CommonJS from '/electroff?module';
+
+  CommonJS(async ({require, until}) => {
+    const five = require('johnny-five');
+    const {RaspiIO} = require('raspi-io');
+
+    const font = require('oled-font-5x7');
+    const Oled = require('oled-js');
+
+    const {ceil, pow} = Math;
+    const options = {
+      width: 128,
+      height: 32,
+      address: 0x3c
+    };
+
+    const board = new five.Board({io: new RaspiIO});
+    await until(board).is('ready');
+
+    const oled = await new Oled(board, five, options);
+
+    const input = document.querySelector('input');
+    const button = document.querySelector('button');
+
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      const scale = 2;
+      const h = 7;
+      button.disabled = true;
+      await oled.clearDisplay();
+      await oled.setCursor(1, ceil((options.height - h) / pow(2, scale)));
+      await oled.writeString(font, scale, input.value.trim(), 1, true, 2);
+      await oled.update();
+      button.disabled = false;
+    });
+
+    button.disabled = false;
+  });
+  </script>
+</head>
+<body>
+  <input placeholder="write something">
+  <button disabled>update</button>
+</body>
+</html>
+

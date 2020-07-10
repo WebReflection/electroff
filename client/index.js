@@ -14,11 +14,13 @@ const electroff = (function (fetch) {'use strict';
     `${target()}.apply(${json(self)},${json(args)})`
   ;
 
+  let NetworkOK = true;
   const exec = body => fetch('electroff', {
     headers: {'Content-Type': 'application/json;charset=utf-8'},
     method: 'POST',
     body: json(body)
   }).then(b => b.text()).then(parse, (e = {message: 'Network Error'}) => {
+    NetworkOK = false;
     document.documentElement.innerHTML = `
       <!doctype html>
       <html lang="en">
@@ -45,12 +47,11 @@ const electroff = (function (fetch) {'use strict';
   });
 
   (function poll() {
-    setTimeout(
-      () => {
-        exec({UID, channel, code: 'true'}).then(poll);
-      },
-      60000
-    );
+    if (NetworkOK)
+      setTimeout(
+        () => exec({UID, channel, code: 'true'}).then(poll),
+        60000
+      );
   }());
 
   addEventListener('beforeunload', e => {

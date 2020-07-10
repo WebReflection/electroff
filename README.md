@@ -159,7 +159,7 @@ Theoretically, this is either "_as safe as_", or "_as unsafe as_", _electron_ ca
 
 Yes, but there are at least two things to keep in mind:
 
-  * any _Node.js_ instance **must** be _awaited_ on creation, i.e.: `const instance = await new require('events').EventEmitter;`
+  * any _Node.js_ instance *should* be _awaited_ on creation, i.e.: `const instance = await new require('events').EventEmitter;`, unless we're waiting for a specific listener, in which case it's better to await `until(thing).is('ready')` (see next F.A.Q.)
   * there is currently no way to automatically free the _vm_ from previously created instances, if not by explicitly using `remove(instance)`
 
 Last point means the _vm_ memory related to any client would be freed *only* once the client refreshes the page, or closes the tab, but there's the possibility that the client crashes or has no network all of a sudden, and in such case the _vm_ will trash any reference automatically, in about 5 minutes or more.
@@ -179,10 +179,16 @@ Following an example of how this could work in practice.
 CommonJS(async ({require, until}) => {
   const five = require('johnny-five');
 
-  const board = await new five.Board();
+  // no need to await here, or ready could
+  // be fired before the next request is performed
+  const board = new five.Board();
+
+  // simply await everything at once in here
   await until(board).is('ready');
 
+  // now all board dependent instances can be awaited
   const led = await new five.Led(13);
+  // so that it's possible to await each method/invoke/property
   await led.blink(500);
 
   document.body.textContent = `it's blinking!`;
