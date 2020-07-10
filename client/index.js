@@ -41,7 +41,7 @@ const electroff = (function (fetch) {'use strict';
   const json = any => stringify(any, (_, any) => value(any));
 
   const value = any => typeof any === 'function' ?
-    (any[secret] || `\x00${any}\x00`) : any
+    (any[secret] || `(\xFF${any}\xFF)`) : any
   ;
 
   (function poll() {

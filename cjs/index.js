@@ -106,7 +106,7 @@ module.exports = (request, response, next) => {
           if (channel === CHANNEL && UID) {
             cache.set(UID, Date.now() + EXPIRE);
             cleanup();
-            const exec = (code || '').replace(/"\\u0000(.+?)\\u0000"/g, fn);
+            const exec = (code || '').replace(/"\(\xFF([^\2]+?)(\xFF\)")/g, fn);
             if (!(UID in sandbox.global)) {
               sandbox.global[UID] = {[X00]: create(null)};
               if (DEBUG)
