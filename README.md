@@ -68,6 +68,7 @@ The `public/index.html` folder can contain something like this:
   * `global`, usable to share a mirrored state across multiple `electroff(...)` calls <sup><sub>(but not shared across multiple clients)</sub></sup>
   * `remove`, usable to remove instances when these are not available anymore <sup><sub>(a _WeakRef_ implementation is coming soon)</sub></sup>
   * `__dirname`, which points at the _Node.js_ path that is currently running the module
+  * `until`, usable to `await` emitters events on the client-side <sup><sub>(read more in F.A.Q.)</sub></sup>
 
 
 
@@ -108,6 +109,36 @@ await require("fs").promises.readFile.apply(
 
 All operations are inevitably repeated because every single `.property` access, `.method(...)` invoke, or even `new module.Thing(...)`, is a branch of the code a part.
 
+### The foreign vs local scope
+
+It is important to keep in mind that there is a huge difference between _foreign_ code, and _scoped_ code, where _foreign_ code cannot reach _scoped_ code, and vive-versa.
+```js
+electroff(async ({require}) => {
+  // local scope code
+  const num = Math.random();
+
+  // foreign code (needs to be awaited)
+  const {EventEmitter} = require('events');
+  const ee = await new EventEmitter;
+  await ee.on('stuff', async function (value) {
+    // nothing in this scope can reach
+    // `num`, as example, is not accessible
+    // and neither is `ee` ... but `this` works fine
+    console.log(this);
+    // this log will be on the Node.js site, it won't log
+    // anything on the browser
+    console.log('stuff', value);
+  });
+
+  // DOM listeners should be async if these need to signal
+  // or interact with the foreign code because ...
+  someButtom.addEventListener('click', async () => {
+    // ... foreign code always need to be awaited!
+    await ee.emit('stuff', 123);
+  });
+});
+```
+
   </div>
 </details>
 
@@ -132,6 +163,31 @@ Yes, but there are at least two things to keep in mind:
   * there is currently no way to automatically free the _vm_ from previously created instances, if not by explicitly using `remove(instance)`
 
 Last point means the _vm_ memory related to any client would be freed *only* once the client refreshes the page, or closes the tab, but there's the possibility that the client crashes or has no network all of a sudden, and in such case the _vm_ will trash any reference automatically, in about 5 minutes or more.
+
+  </div>
+</details>
+
+<details>
+  <summary><strong>How to react to/until Node.js events?</strong></summary>
+  <div>
+
+The `until` utility keeps the _POST_ request hanging *until* the observed event is triggered _once_. It pollutes the _emitter_, if not polluted already, with an `is(eventName)` that returns a promise resolved once the event name happens.
+
+Following an example of how this could work in practice.
+
+```js
+CommonJS(async ({require, until}) => {
+  const five = require('johnny-five');
+
+  const board = await new five.Board();
+  await until(board).is('ready');
+
+  const led = await new five.Led(13);
+  await led.blink(500);
+
+  document.body.textContent = `it's blinking!`;
+});
+```
 
   </div>
 </details>

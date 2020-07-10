@@ -24,7 +24,6 @@ import vm from 'vm';
 import {stringify} from 'flatted';
 
 import umeta from 'umeta';
-import { response } from 'express';
 const {dirName, require: $require} = umeta(import.meta);
 
 const {isArray} = Array;
@@ -33,6 +32,9 @@ const {parse} = JSON;
 
 const cache = new Map;
 const rand = length => crypto.randomBytes(length).toString('hex');
+
+const revive = /"\(\xFF([^\2]+?)(\xFF\)")/g;
+const callback = (_, $1) => parse(`"${$1}"`);
 
 const CHANNEL = rand(32);
 const EXPIRE = 300000; // expires in 5 minutes
@@ -61,8 +63,6 @@ const cleanup = () => {
   }
 };
 
-const fn = (_, $1) => parse(`"${$1}"`);
-
 const js = ''.replace.call(
   readFileSync(join(dirName, '..', 'client', 'index.js')),
   '{{channel}}',
@@ -80,7 +80,14 @@ const js = ''.replace.call(
 const sandbox = vm.createContext({
   global: create(null),
   require: $require,
-  console
+  Buffer,
+  console,
+  setTimeout,
+  setInterval,
+  clearTimeout,
+  clearInterval,
+  setImmediate,
+  clearImmediate
 });
 
 const ok = (response, content) => {
@@ -105,7 +112,7 @@ export default (request, response, next) => {
           if (channel === CHANNEL && UID) {
             cache.set(UID, Date.now() + EXPIRE);
             cleanup();
-            const exec = (code || '').replace(/"\(\xFF([^\2]+?)(\xFF\)")/g, fn);
+            const exec = (code || '').replace(revive, callback);
             if (!(UID in sandbox.global)) {
               sandbox.global[UID] = {[X00]: create(null)};
               if (DEBUG)

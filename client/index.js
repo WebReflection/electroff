@@ -143,6 +143,12 @@ const electroff = (function (fetch) {'use strict';
           return `require(${stringify(module)})`;
         },
         handler
+      ),
+      until: emitter => new Proxy(
+        () => `(e=>((e.is||(e.is=t=>new Promise($=>{e.once(t,$)}))),e))(${
+          emitter[secret]
+        })`,
+        handler
       )
     });
   };
