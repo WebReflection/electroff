@@ -1,8 +1,6 @@
 # electroff
 
-![keys beside a switched off button](./electroff-head.jpg)
-
-<sup>**Social Media Photo by [Thais Ribeiro](https://unsplash.com/@thaisribeir_) on [Unsplash](https://unsplash.com/)**</sup>
+![Raspberry Pi Oled](./electroff-head.jpg)
 
 A cross browser, electron-less helper, for **IoT** projects and **standalone** applications.
 
