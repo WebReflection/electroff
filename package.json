@@ -27,7 +27,7 @@
     "default": "./cjs/index.js"
   },
   "dependencies": {
-    "flatted": "^3.0.4",
+    "flatted": "^3.1.0",
     "umeta": "^0.2.4"
   },
   "repository": {
