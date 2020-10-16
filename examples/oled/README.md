@@ -7,7 +7,7 @@ Install the _pigpio_ first, and reboot the board:
 
 Download [package.json](./package.json) and [index.js](./index.js) in any local folder.
 
-Create a `public` folder, via `mkdir -p public`, and download [index.html](./index.html) in there.
+Create a `public` folder, via `mkdir -p public`, and download [index.html](./public/index.html) in there.
 
 Find out which IP address your PI has, i.e. via `ip addr`.
 
