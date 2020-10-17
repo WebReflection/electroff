@@ -6,14 +6,6 @@ A cross browser, electron-less helper, for **IoT** projects and **standalone** a
 
 With this module, you can run arbitrary _Node.js_ code from the client, from any browser, and *without* needing [electron](https://www.electronjs.org/).
 
-
-#### Previous Work / Alternatives
-
-  * **[workway](https://github.com/WebReflection/workway#readme)**: the **safest way** to do this. The server explicitly enables things that should be usable from the client
-  * **[trojan-horse](https://github.com/WebReflection/trojan-horse#readme)**: an early, and awkward, take on this approach <sup><sub>(it's ugly, but it *kinda* works, and it's *kinda* safer too)</sub></sup>
-
-
-
 ## Getting Started
 
 Considering the following `app.js` file content:
@@ -146,7 +138,13 @@ electroff(async ({require}) => {
 
 Theoretically, this is either "_as safe as_", or "_as unsafe as_", _electron_ can be, but technically, the whole idea behind is based on client side code evaluation through a shared [vm](https://nodejs.org/api/vm.html) and always the [same context](https://nodejs.org/api/vm.html#vm_script_runincontext_contextifiedobject_options) per each client, although ensuring a "_share nothing_" `global` object per each context, so that multiple clients, with multiple instances/invokes, won't interfere with each other, given the same script on the page.
 
-**⚠ Bear in mind** that even if the whole communication channel is somehow based on very hard to guess unique random _IDs_ per client, this project/module is **not suitable for websites**, but it can be used in any _IoT_ related project, or standalone applications, where we are sure there is no malicious code running arbitrary _JS_ on our machines, which is not always the case for online Web pages.
+If the `ELECTROFF_ONCE=1` environment variable is present, *electroff* will increase security in the following way:
+
+  * a client can use *electroff* only via `import electroff from '/electroff?module'`, and any attempt to retrieve the electroff script in a different way will fail
+  * previous point ensures that the module can be executed *only once*, so there's one single room/window in the page to define its behavior, anot nothing else can interfeer with the server side *vm*
+  * using *CSP* would also work so that only known code on the page can safely run, and there's no `eval` nor `Function` call in here, so that nothing else can be injected
+
+Regardless of the `ELECTROFF_ONCE=1` security guard though, please **bear in mind** that even if the whole communication channel is somehow based on very hard to guess unique random _IDs_ per client, this project/module is **not suitable for websites**, but it can be used in any _IoT_ related project, kiosk, or standalone applications, where we are sure there is no malicious code running arbitrary _JS_ on our machines, which is not always the case for online Web pages.
 
   </div>
 </details>

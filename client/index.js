@@ -58,7 +58,13 @@ const electroff = (function (fetch) {'use strict';
     navigator.sendBeacon('electroff', stringify({UID, channel, exit: true}));
   });
 
+  let calls = 0;
+  let once = '{{once}}';
   return function electroff(fn) {
+    // avoid invoking CommonJS/electroff more than once
+    // whenever the ELECTROFF_ONCE flag is passed
+    if (once && calls++)
+      throw new Error('Unhautorized script');
 
     let instances = 0;
     let run = Promise.resolve();

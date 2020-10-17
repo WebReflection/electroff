@@ -40,7 +40,9 @@ const callback = (_, $1) => parse(`"${$1}"`);
 const CHANNEL = rand(32);
 const EXPIRE = 300000; // expires in 5 minutes
 const X00 = '\x00';
-const DEBUG = /^(?:1|true)$/i.test(env.DEBUG);
+const DEBUG = /^(?:1|y|yes|true)$/i.test(env.DEBUG);
+
+const ELECTROFF_ONCE = /^(?:1|y|yes|true)$/i.test(env.ELECTROFF_ONCE);
 
 const cleanup = () => {
   const now = Date.now();
@@ -71,6 +73,9 @@ const js = ''.replace.call(
 ).replace(
   '{{__dirname}}',
   dirName
+).replace(
+  /('|"|`)\{\{once\}\}\1/,
+  ELECTROFF_ONCE
 ).replace(
   '"{{Flatted}}"',
   readFileSync(
@@ -199,15 +204,23 @@ module.exports = (request, response, next) => {
       });
     }
     else {
-      response.writeHead(200, {
-        'Cache-Control': 'no-store',
-        'Content-Type': 'application/javascript;charset=utf-8'
-      });
-      response.end(
-        js.replace('{{UID}}', rand(16)).concat(
-          asModule ? 'export default electroff;' : ''
-        )
-      );
+      if (ELECTROFF_ONCE && !asModule) {
+        response.writeHead(403);
+        response.end();
+        if (DEBUG)
+          console.error(`client asked for a global electroff`);
+      }
+      else {
+        response.writeHead(200, {
+          'Cache-Control': 'no-store',
+          'Content-Type': 'application/javascript;charset=utf-8'
+        });
+        response.end(
+          js.replace('{{UID}}', rand(16)).concat(
+            asModule ? 'export default electroff;' : ''
+          )
+        );
+      }
     }
     return true;
   }
