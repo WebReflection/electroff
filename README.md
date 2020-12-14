@@ -6,6 +6,12 @@ A cross browser, electron-less helper, for **IoT** projects and **standalone** a
 
 With this module, you can run arbitrary _Node.js_ code from the client, from any browser, and *without* needing [electron](https://www.electronjs.org/).
 
+### 📣 Community Announcement
+
+Please ask questions in the [dedicated forum](https://webreflection.boards.net/) to help the community around this project grow ♥
+
+---
+
 ## Getting Started
 
 Considering the following `app.js` file content:
