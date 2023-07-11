@@ -1,5 +1,11 @@
 # Raspberry Pi Oled Demo
 
+- - -
+
+**Announcement**: electroff can be fully replaced by [coincident/server](https://github.com/WebReflection/coincident-oled#readme)!
+
+- - -
+
 Install the _pigpio_ first, and **reboot** the board:
 
   * in ArchLinux via [pigpio](https://aur.archlinux.org/packages/pigpio/) - Please note this requires a dedicated raspberrypi linux kernel
