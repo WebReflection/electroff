@@ -9,6 +9,10 @@ With this module, you can run arbitrary _Node.js_ code from the client, from any
 
 ## 📣 Announcement
 
+**Announcement**: electroff can be fully replaced by [coincident/server](https://github.com/WebReflection/coincident-oled#readme)!
+
+- - -
+
 Looking for a lighter, faster, much safer, yet slightly more limited alternative? Try **[proxied-node](https://github.com/WebReflection/proxied-node#readme)** out instead.
 
 
